@@ -98,5 +98,5 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: codecov.json
-          slug: jbr/typeset
+          slug: jbr/type-set
 
