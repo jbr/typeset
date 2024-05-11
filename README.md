@@ -15,7 +15,7 @@
 [crate]: https://crates.io/crates/type-set
 [docs-badge]: https://img.shields.io/badge/docs-latest-blue.svg?style=flat-square
 [version-badge]: https://img.shields.io/crates/v/type-set.svg?style=flat-square
-[main-docs]: https://jbr.github.io/type-set/type-set/
+[main-docs]: https://jbr.github.io/type-set/type_set/
 
 ## License
 
