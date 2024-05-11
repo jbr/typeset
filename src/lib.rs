@@ -39,10 +39,11 @@ type Key = TypeId;
 
 macro_rules! unwrap {
     ($x:expr) => {
-        if cfg!(debug_assertions) {
-            ($x).unwrap()
-        } else {
-            unsafe { ($x).unwrap_unchecked() }
+        match $x {
+            #[cfg(debug_assertions)]
+            x => x.unwrap(),
+            #[cfg(not(debug_assertions))]
+            x => unsafe { x.unwrap_unchecked() },
         }
     };
 }
