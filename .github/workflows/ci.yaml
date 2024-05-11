@@ -34,6 +34,11 @@ jobs:
       env:
         RUST_LOG: trace
 
+    - name: Tests (release)
+      run: cargo test --release
+      env:
+        RUST_LOG: trace
+
   check_fmt_and_docs:
     name: Checking fmt, clippy, and docs
     runs-on: ubuntu-latest
