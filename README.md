@@ -5,7 +5,7 @@
 * [Contributing][contributing]
 * [CI ![CI][ci-badge]][ci]
 * [API docs for main][main-docs]
-* [![codecov](https://codecov.io/gh/jbr/type-set/graph/badge.svg?token=AXD0FXYIR4)](https://codecov.io/gh/jbr/type-set)
+* [![codecov](https://codecov.io/gh/jbr/type-set/graph/badge.svg?token=icc3N1bPQD)](https://codecov.io/gh/jbr/type-set)
 
 [ci]: https://github.com/jbr/type-set/actions?query=workflow%3ACI
 [ci-badge]: https://github.com/jbr/type-set/workflows/CI/badge.svg
