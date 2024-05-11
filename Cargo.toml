@@ -1,0 +1,13 @@
+[package]
+name = "typeset"
+version = "0.1.0"
+edition = "2021"
+repository = "https://github.com/jbr/typeset"
+readme = "README.md"
+keywords = ["collections"]
+description = "A set of heterogeneous types"
+categories = ["data-structures"]
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+log = "0.4.21"
