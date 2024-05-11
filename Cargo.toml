@@ -1,8 +1,8 @@
 [package]
-name = "typeset"
+name = "type-set"
 version = "0.1.0"
 edition = "2021"
-repository = "https://github.com/jbr/typeset"
+repository = "https://github.com/jbr/type-set"
 readme = "README.md"
 keywords = ["collections"]
 description = "A set of heterogeneous types"
