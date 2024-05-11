@@ -18,7 +18,7 @@ use std::{
 /// comparable results. See those functions for further usage examples.
 ///
 /// ```rust
-/// use typeset::{TypeSet, entry::Entry};
+/// use type_set::{TypeSet, entry::Entry};
 /// let mut set = TypeSet::new().with("hello");
 /// let (previous, current) = match set.entry::<&'static str>() {
 ///     Entry::Vacant(vacant_entry) => {
@@ -79,7 +79,7 @@ impl<'a, T: Send + Sync + 'static> Entry<'a, T> {
     /// ## Example
     ///
     /// ```rust
-    /// let mut set = typeset::TypeSet::new();
+    /// let mut set = type_set::TypeSet::new();
     /// assert_eq!(*set.entry().or_insert("hello"), "hello");
     /// assert_eq!(set.get::<&'static str>(), Some(&"hello"));
     /// assert_eq!(*set.entry().or_insert("world"), "hello");
@@ -100,7 +100,7 @@ impl<'a, T: Send + Sync + 'static> Entry<'a, T> {
     /// ## Example
     ///
     /// ```rust
-    /// let mut set = typeset::TypeSet::new();
+    /// let mut set = type_set::TypeSet::new();
     /// assert_eq!(*set.entry().or_insert_with(|| String::from("hello")), "hello");
     /// assert_eq!(set.get::<String>(), Some(&String::from("hello")));
     /// assert_eq!(*set.entry::<String>().or_insert_with(|| panic!("never called")), "hello");
@@ -119,7 +119,7 @@ impl<'a, T: Send + Sync + 'static> Entry<'a, T> {
     /// ## Example
     ///
     /// ```rust
-    /// let mut set = typeset::TypeSet::new().with(String::from("hello"));
+    /// let mut set = type_set::TypeSet::new().with(String::from("hello"));
     /// let value = set.entry::<String>()
     ///     .and_modify(|s| s.push_str(" world"))
     ///     .or_insert_with(|| String::from("greetings"));
@@ -161,7 +161,7 @@ impl<'a, T: Default + Send + Sync + 'static> Entry<'a, T> {
     /// ## Example
     ///
     /// ```rust
-    /// let mut set = typeset::TypeSet::new();
+    /// let mut set = type_set::TypeSet::new();
     /// assert_eq!(*set.entry::<&'static str>().or_default(), "");
     /// set.insert("hello");
     /// assert_eq!(*set.entry::<&'static str>().or_default(), "hello");

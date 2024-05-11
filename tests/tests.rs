@@ -1,4 +1,4 @@
-use typeset::{entry::Entry, TypeSet};
+use type_set::{entry::Entry, TypeSet};
 #[test]
 fn smoke() {
     let mut set = TypeSet::new();

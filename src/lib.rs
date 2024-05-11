@@ -92,7 +92,7 @@ impl TypeSet {
     ///
     /// ## Example
     /// ```rust
-    /// let mut set = typeset::TypeSet::new().with("hello");
+    /// let mut set = type_set::TypeSet::new().with("hello");
     /// let previous = set.insert("world");
     /// assert_eq!(set.get::<&'static str>(), Some(&"world"));
     /// assert_eq!(previous, Some("hello"));
@@ -116,7 +116,7 @@ impl TypeSet {
     ///
     /// ## Example
     /// ```rust
-    /// let set = typeset::TypeSet::new().with("hello");
+    /// let set = type_set::TypeSet::new().with("hello");
     /// assert_eq!(set.get::<&'static str>(), Some(&"hello"));
     /// ```
     #[must_use]
@@ -130,7 +130,7 @@ impl TypeSet {
     /// ## Example
     ///
     /// ```rust
-    /// let set = typeset::TypeSet::new().with("hello");
+    /// let set = type_set::TypeSet::new().with("hello");
     /// assert!(set.contains::<&'static str>());
     /// assert!(!set.contains::<String>());
     /// ```
@@ -158,7 +158,7 @@ impl TypeSet {
     /// ## Example
     ///
     /// ```rust
-    /// let mut set = typeset::TypeSet::new().with(String::from("hello"));
+    /// let mut set = type_set::TypeSet::new().with(String::from("hello"));
     /// if let Some(string) = set.get_mut::<String>() {
     ///     string.push_str(" world");
     /// }
@@ -177,7 +177,7 @@ impl TypeSet {
     /// ## Example
     ///
     /// ```rust
-    /// let mut set = typeset::TypeSet::new().with("hello");
+    /// let mut set = type_set::TypeSet::new().with("hello");
     /// assert_eq!(set.remove::<&'static str>(), Some("hello"));
     /// assert_eq!(set.remove::<&'static str>(), None);
     /// ```
@@ -196,7 +196,7 @@ impl TypeSet {
     /// ## Example
     ///
     /// ```rust
-    /// let mut set = typeset::TypeSet::new();
+    /// let mut set = type_set::TypeSet::new();
     /// assert_eq!(set.get_or_insert("hello"), &mut "hello");
     /// assert_eq!(set.get_or_insert("world"), &mut "hello");
     /// ```
@@ -214,7 +214,7 @@ impl TypeSet {
     /// ## Example
     ///
     /// ```rust
-    /// let mut set = typeset::TypeSet::new();
+    /// let mut set = type_set::TypeSet::new();
     /// assert_eq!(set.get_or_insert_with(|| String::from("hello")), "hello");
     /// assert_eq!(set.get_or_insert_with::<String>(|| panic!("this is never called")), "hello");
     /// ```
@@ -232,7 +232,7 @@ impl TypeSet {
     /// ## Example
     ///
     /// ```rust
-    /// let mut set = typeset::TypeSet::new().with(10usize);
+    /// let mut set = type_set::TypeSet::new().with(10usize);
     /// let ten: usize = *set.get_or_insert_default();
     /// assert_eq!(ten, 10);
     /// ```
@@ -246,8 +246,8 @@ impl TypeSet {
     /// ## Example
     ///
     /// ```rust
-    /// let mut set_a = typeset::TypeSet::new().with(8u8).with("hello");
-    /// let set_b = typeset::TypeSet::new().with(32u32).with("world");
+    /// let mut set_a = type_set::TypeSet::new().with(8u8).with("hello");
+    /// let set_b = type_set::TypeSet::new().with(32u32).with("world");
     /// set_a.merge(set_b);
     /// assert_eq!(set_a.get::<u8>(), Some(&8));
     /// assert_eq!(set_a.get::<u32>(), Some(&32));

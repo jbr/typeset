@@ -1,21 +1,21 @@
-# 📰 Typeset &mdash; Heterogeneous data structure
+# 📰 Type-Set &mdash; Heterogeneous data structure
 
 * [API Docs][docs] [![docs.rs docs][docs-badge]][docs]
 * [Releases][releases] [![crates.io version][version-badge]][crate]
 * [Contributing][contributing]
 * [CI ![CI][ci-badge]][ci]
 * [API docs for main][main-docs]
-* [![codecov](https://codecov.io/gh/jbr/typeset/graph/badge.svg?token=AXD0FXYIR4)](https://codecov.io/gh/jbr/typeset)
+* [![codecov](https://codecov.io/gh/jbr/type-set/graph/badge.svg?token=AXD0FXYIR4)](https://codecov.io/gh/jbr/type-set)
 
-[ci]: https://github.com/jbr/typeset/actions?query=workflow%3ACI
-[ci-badge]: https://github.com/jbr/typeset/workflows/CI/badge.svg
-[releases]: https://github.com/jbr/typeset/releases
-[docs]: https://docs.rs/typeset
-[contributing]: https://github.com/jbr/typeset/blob/main/.github/CONTRIBUTING.md
-[crate]: https://crates.io/crates/typeset
+[ci]: https://github.com/jbr/type-set/actions?query=workflow%3ACI
+[ci-badge]: https://github.com/jbr/type-set/workflows/CI/badge.svg
+[releases]: https://github.com/jbr/type-set/releases
+[docs]: https://docs.rs/type-set
+[contributing]: https://github.com/jbr/type-set/blob/main/.github/CONTRIBUTING.md
+[crate]: https://crates.io/crates/type-set
 [docs-badge]: https://img.shields.io/badge/docs-latest-blue.svg?style=flat-square
-[version-badge]: https://img.shields.io/crates/v/typeset.svg?style=flat-square
-[main-docs]: https://jbr.github.io/typeset/typeset/
+[version-badge]: https://img.shields.io/crates/v/type-set.svg?style=flat-square
+[main-docs]: https://jbr.github.io/type-set/type-set/
 
 ## License
 
