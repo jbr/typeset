@@ -1,5 +1,38 @@
+use std::process::Termination;
+use test_harness::test;
 use type_set::{entry::Entry, TypeSet};
-#[test]
+
+fn harness<T: Termination>(f: impl FnOnce() -> T) -> T {
+    let _ = env_logger::builder().is_test(true).try_init();
+    f()
+}
+
+struct MyCustomStruct;
+
+#[test(harness)]
+fn debug() {
+    let mut set = TypeSet::new()
+        .with("hello")
+        .with(1usize)
+        .with(MyCustomStruct);
+
+    assert_eq!(
+        r#"TypeSet({"&str", "tests::MyCustomStruct", "usize"})"#,
+        format!("{set:?}")
+    );
+
+    assert_eq!(
+        "Occupied(OccupiedEntry<&str>(\"hello\"))",
+        format!("{:?}", set.entry::<&'static str>())
+    );
+
+    assert_eq!(
+        "Vacant(VacantEntry<alloc::string::String>)",
+        format!("{:?}", set.entry::<String>())
+    );
+}
+
+#[test(harness)]
 fn smoke() {
     let mut set = TypeSet::new();
     assert_eq!(set.len(), 0);
@@ -34,7 +67,7 @@ fn smoke() {
     assert_eq!(set.remove::<String>(), None);
 }
 
-#[test]
+#[test(harness)]
 fn merge() {
     let mut set_a = TypeSet::new().with(8u8).with("hello");
     let set_b = TypeSet::new().with(32u32).with("world");
@@ -45,7 +78,7 @@ fn merge() {
     assert_eq!(set_a.len(), 3);
 }
 
-#[test]
+#[test(harness)]
 fn entry() {
     let mut set = TypeSet::new();
     let entry = set.entry::<String>();

@@ -1,8 +1,8 @@
 use crate::{unwrap, Key, Value};
 use std::{
-    any::{type_name, TypeId},
+    any::{type_name, Any, TypeId},
     collections::btree_map,
-    fmt::{self, Formatter},
+    fmt::{self, Debug, Formatter},
     marker::PhantomData,
     ops::{Deref, DerefMut},
 };
@@ -34,13 +34,23 @@ use std::{
 /// assert_eq!(previous, Some("hello"));
 /// assert_eq!(*current, "entry was occupied");
 /// ```
-#[derive(Debug)]
 pub enum Entry<'a, T> {
     /// A view into the location a T would be stored in the `TypeSet`. See [`VacantEntry`]
     Vacant(VacantEntry<'a, T>),
 
     /// A view into the location a T is currently stored in the `TypeSet`. See [`OccupiedEntry`]
     Occupied(OccupiedEntry<'a, T>),
+}
+
+impl<'a, T: Debug + Any + Send + Sync + 'static> Debug for Entry<'a, T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Vacant(vacant_entry) => f.debug_tuple("Vacant").field(vacant_entry).finish(),
+            Self::Occupied(occupied_entry) => {
+                f.debug_tuple("Occupied").field(occupied_entry).finish()
+            }
+        }
+    }
 }
 
 /// A view into a vacant entry in a `TypeSet`.
@@ -51,11 +61,9 @@ pub struct VacantEntry<'a, T>(
     PhantomData<T>,
 );
 
-impl<'a, T> fmt::Debug for VacantEntry<'a, T> {
+impl<'a, T: Debug + Any + Send + Sync + 'static> Debug for VacantEntry<'a, T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        f.debug_tuple("VacantEntry")
-            .field(&type_name::<T>())
-            .finish()
+        write!(f, "VacantEntry<{}>", type_name::<T>())
     }
 }
 /// A view into the location a T is stored
@@ -64,9 +72,11 @@ pub struct OccupiedEntry<'a, T>(
     PhantomData<T>,
 );
 
-impl<'a, T: fmt::Debug> fmt::Debug for OccupiedEntry<'a, T> {
+impl<'a, T: Debug + Any + Send + Sync + 'static> Debug for OccupiedEntry<'a, T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        f.debug_tuple("OccupiedEntry").field(self.0.get()).finish()
+        f.debug_tuple(&format!("OccupiedEntry<{}>", type_name::<T>()))
+            .field(unwrap!(self.0.get().downcast_ref::<T>()))
+            .finish()
     }
 }
 
@@ -176,7 +186,7 @@ impl<'a, T: Default + Send + Sync + 'static> Entry<'a, T> {
 impl<'a, T: Send + Sync + 'static> VacantEntry<'a, T> {
     /// Sets the value of this entry to the provided `value`
     pub fn insert(self, value: T) -> &'a mut T {
-        unwrap!(self.0.insert(Box::new(value)).downcast_mut())
+        unwrap!(self.0.insert(Value::new(value)).downcast_mut())
     }
 }
 
@@ -198,13 +208,13 @@ impl<'a, T: Send + Sync + 'static> OccupiedEntry<'a, T> {
 
     /// Sets the value of the entry to `value`, returning the entry's previous value.
     pub fn insert(&mut self, value: T) -> T {
-        *unwrap!(self.0.insert(Box::new(value)).downcast())
+        unwrap!(self.0.insert(Value::new(value)).downcast())
     }
 
     /// Take ownership of the value from this Entry
     #[allow(clippy::must_use_candidate)] // sometimes we just want to take the value out and drop it
     pub fn remove(self) -> T {
-        *unwrap!(self.0.remove().downcast())
+        unwrap!(self.0.remove().downcast())
     }
 
     /// Converts the entry into a mutable reference to its value.
