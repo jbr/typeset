@@ -25,16 +25,44 @@ Implementation is based on
 - <https://github.com/http-rs/http-types/blob/main/src/extensions.rs>
 */
 use std::{
-    any::{Any, TypeId},
+    any::{type_name, Any, TypeId},
     collections::BTreeMap,
-    fmt::{self, Formatter},
+    fmt::{self, Debug, Formatter},
 };
 
 /// Types for interacting with a mutable view into a `TypeSet` for a given type
 pub mod entry;
 use entry::Entry;
 
-type Value = Box<dyn Any + Send + Sync>;
+struct Value {
+    any: Box<dyn Any + Send + Sync>,
+    name: &'static str,
+}
+
+impl Value {
+    fn new<T: Any + Send + Sync + 'static>(value: T) -> Self {
+        Self {
+            any: Box::new(value),
+            name: type_name::<T>(),
+        }
+    }
+
+    fn downcast_mut<T: Any + Send + Sync + 'static>(&mut self) -> Option<&mut T> {
+        debug_assert_eq!(type_name::<T>(), self.name);
+        self.any.downcast_mut()
+    }
+
+    fn downcast<T: Any + Send + Sync + 'static>(self) -> Option<T> {
+        debug_assert_eq!(type_name::<T>(), self.name);
+        self.any.downcast().map(|t| *t).ok()
+    }
+
+    fn downcast_ref<T: Any + Send + Sync + 'static>(&self) -> Option<&T> {
+        debug_assert_eq!(type_name::<T>(), self.name);
+        self.any.downcast_ref()
+    }
+}
+
 type Key = TypeId;
 
 macro_rules! unwrap {
@@ -55,6 +83,33 @@ use unwrap;
 /// that cannot be named by the calling code
 #[derive(Default)]
 pub struct TypeSet(BTreeMap<Key, Value>);
+
+fn field_with(f: impl Fn(&mut Formatter) -> fmt::Result) -> impl Debug {
+    struct DebugWith<F>(F);
+
+    impl<F> Debug for DebugWith<F>
+    where
+        F: Fn(&mut Formatter) -> fmt::Result,
+    {
+        fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+            self.0(f)
+        }
+    }
+
+    DebugWith(f)
+}
+
+impl Debug for TypeSet {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.debug_tuple("TypeSet")
+            .field(&field_with(|f| {
+                let mut values = self.0.values().map(|v| v.name).collect::<Vec<_>>();
+                values.sort_unstable();
+                f.debug_set().entries(values).finish()
+            }))
+            .finish()
+    }
+}
 
 fn key<T: 'static>() -> Key {
     TypeId::of::<T>()
@@ -100,13 +155,15 @@ impl TypeSet {
     pub fn insert<T: Send + Sync + 'static>(&mut self, value: T) -> Option<T> {
         match self.entry() {
             Entry::Vacant(v) => {
-                log::trace!("inserting {}", std::any::type_name::<T>());
+                #[cfg(feature = "log")]
+                log::trace!("inserting {}", type_name::<T>());
                 v.insert(value);
                 None
             }
 
             Entry::Occupied(mut o) => {
-                log::trace!("replacing {}", std::any::type_name::<T>());
+                #[cfg(feature = "log")]
+                log::trace!("replacing {}", type_name::<T>());
                 Some(o.insert(value))
             }
         }
@@ -136,9 +193,10 @@ impl TypeSet {
     /// ```
     #[must_use]
     pub fn contains<T: Send + Sync + 'static>(&self) -> bool {
+        #[cfg(feature = "log")]
         log::trace!(
             "contains {}?: {}",
-            std::any::type_name::<T>(),
+            type_name::<T>(),
             self.0.contains_key(&TypeId::of::<T>())
         );
         self.0.contains_key(&key::<T>())
@@ -147,10 +205,11 @@ impl TypeSet {
     /// Immutably borrow a value that has been inserted into this `TypeSet`.
     #[must_use]
     pub fn get<T: Send + Sync + 'static>(&self) -> Option<&T> {
-        log::trace!("getting {}", std::any::type_name::<T>(),);
+        #[cfg(feature = "log")]
+        log::trace!("getting {}", type_name::<T>(),);
         self.0
             .get(&key::<T>())
-            .map(|boxed| unwrap!(boxed.downcast_ref()))
+            .map(|value| unwrap!(value.downcast_ref()))
     }
 
     /// Attempt to mutably borrow to a value that has been inserted into this `TypeSet`.
@@ -167,7 +226,7 @@ impl TypeSet {
     pub fn get_mut<T: Send + Sync + 'static>(&mut self) -> Option<&mut T> {
         self.0
             .get_mut(&key::<T>())
-            .map(|boxed| unwrap!(boxed.downcast_mut()))
+            .map(|value| unwrap!(value.downcast_mut()))
     }
 
     /// Remove a value from this `TypeSet`.
@@ -184,7 +243,7 @@ impl TypeSet {
     pub fn remove<T: Send + Sync + 'static>(&mut self) -> Option<T> {
         self.0
             .remove(&key::<T>())
-            .map(|boxed| *unwrap!(boxed.downcast()))
+            .map(|value| unwrap!(value.downcast()))
     }
 
     /// Get a value from this `TypeSet` or populate it with the provided default.
@@ -255,11 +314,5 @@ impl TypeSet {
     /// ```
     pub fn merge(&mut self, other: TypeSet) {
         self.0.extend(other.0);
-    }
-}
-
-impl fmt::Debug for TypeSet {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        f.debug_struct("TypeSet").finish()
     }
 }
