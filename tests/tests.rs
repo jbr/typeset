@@ -63,8 +63,8 @@ fn smoke() {
         "HELLO WORLD"
     );
     assert_eq!(*set.get_or_insert_default::<String>(), "HELLO WORLD");
-    assert_eq!(set.remove::<String>().unwrap(), "HELLO WORLD");
-    assert_eq!(set.remove::<String>(), None);
+    assert_eq!(set.take::<String>().unwrap(), "HELLO WORLD");
+    assert_eq!(set.take::<String>(), None);
 }
 
 #[test(harness)]

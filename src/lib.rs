@@ -237,10 +237,10 @@ impl TypeSet {
     ///
     /// ```rust
     /// let mut set = type_set::TypeSet::new().with("hello");
-    /// assert_eq!(set.remove::<&'static str>(), Some("hello"));
-    /// assert_eq!(set.remove::<&'static str>(), None);
+    /// assert_eq!(set.take::<&'static str>(), Some("hello"));
+    /// assert_eq!(set.take::<&'static str>(), None);
     /// ```
-    pub fn remove<T: Send + Sync + 'static>(&mut self) -> Option<T> {
+    pub fn take<T: Send + Sync + 'static>(&mut self) -> Option<T> {
         self.0
             .remove(&key::<T>())
             .map(|value| unwrap!(value.downcast()))
