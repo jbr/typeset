@@ -135,7 +135,7 @@ impl<'a, T: Send + Sync + 'static> Entry<'a, T> {
     ///     .or_insert_with(|| String::from("greetings"));
     /// assert_eq!(value, "hello world");
     ///
-    /// set.remove::<String>();
+    /// set.take::<String>();
     /// let value = set.entry::<String>()
     ///     .and_modify(|s| s.push_str(" world"))
     ///     .or_insert_with(|| String::from("greetings"));
