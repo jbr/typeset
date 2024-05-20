@@ -153,20 +153,7 @@ impl TypeSet {
     /// assert_eq!(previous, Some("hello"));
     /// ```
     pub fn insert<T: Send + Sync + 'static>(&mut self, value: T) -> Option<T> {
-        match self.entry() {
-            Entry::Vacant(v) => {
-                #[cfg(feature = "log")]
-                log::trace!("inserting {}", type_name::<T>());
-                v.insert(value);
-                None
-            }
-
-            Entry::Occupied(mut o) => {
-                #[cfg(feature = "log")]
-                log::trace!("replacing {}", type_name::<T>());
-                Some(o.insert(value))
-            }
-        }
+        self.entry().insert(value)
     }
 
     /// Chainable constructor to add a type to this `TypeSet`
@@ -241,9 +228,7 @@ impl TypeSet {
     /// assert_eq!(set.take::<&'static str>(), None);
     /// ```
     pub fn take<T: Send + Sync + 'static>(&mut self) -> Option<T> {
-        self.0
-            .remove(&key::<T>())
-            .map(|value| unwrap!(value.downcast()))
+        self.entry().take()
     }
 
     /// Get a value from this `TypeSet` or populate it with the provided default.

@@ -152,6 +152,93 @@ impl<'a, T: Send + Sync + 'static> Entry<'a, T> {
         }
     }
 
+    /// Remove and return a value from this entry, if occupied.
+    #[must_use]
+    pub fn take(self) -> Option<T> {
+        self.into_occupied().map(OccupiedEntry::remove)
+    }
+
+    /// Returns an `OccupiedEntry` or panic
+    ///
+    /// # Panics
+    ///
+    /// This function will panic if the entry is vacant
+    #[must_use]
+    pub fn unwrap_occupied(self) -> OccupiedEntry<'a, T> {
+        self.into_occupied().unwrap_or_else(|| {
+            panic!(
+                "expected an occupied type-set entry for {}, but was vacant",
+                type_name::<T>()
+            )
+        })
+    }
+
+    /// Returns a `VacantEntry` or panic
+    ///
+    /// # Panics
+    ///
+    /// This function will panic if the entry is occupied
+    #[must_use]
+    pub fn unwrap_vacant(self) -> VacantEntry<'a, T> {
+        self.into_vacant().unwrap_or_else(|| {
+            panic!(
+                "expected a vacant type-set entry for {}, but was occupied",
+                type_name::<T>()
+            )
+        })
+    }
+
+    /// Returns a mutable reference to the contained type, if this entry is occupied
+    #[must_use]
+    pub fn into_mut(self) -> Option<&'a mut T> {
+        self.into_occupied().map(OccupiedEntry::into_mut)
+    }
+
+    /// Returns an [`OccupiedEntry`] or `None` if this entry is vacant.
+    #[must_use]
+    pub fn into_occupied(self) -> Option<OccupiedEntry<'a, T>> {
+        match self {
+            Entry::Occupied(occupied_entry) => Some(occupied_entry),
+            Entry::Vacant(_) => None,
+        }
+    }
+
+    /// Returns a [`VacantEntry`] or `None` if this entry is occupied.
+    #[must_use]
+    pub fn into_vacant(self) -> Option<VacantEntry<'a, T>> {
+        match self {
+            Entry::Occupied(_) => None,
+            Entry::Vacant(vacant_entry) => Some(vacant_entry),
+        }
+    }
+
+    /// Returns whether this `Entry` is a [`VacantEntry`]
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        matches!(self, Entry::Vacant(_))
+    }
+
+    /// Insert a value into this [`Entry`].
+    ///
+    /// If the Entry is already an [`OccupiedEntry`], the previously contained value will be
+    /// returned
+    pub fn insert(self, value: T) -> Option<T> {
+        match self {
+            Entry::Vacant(v) => {
+                #[cfg(feature = "log")]
+                log::trace!("inserting {}", type_name::<T>());
+                v.insert(value);
+                None
+            }
+
+            Entry::Occupied(mut o) => {
+                #[cfg(feature = "log")]
+                log::trace!("replacing {}", type_name::<T>());
+                Some(o.insert(value))
+            }
+        }
+    }
+
     pub(super) fn new(entry: btree_map::Entry<'a, TypeId, Value>) -> Self {
         match entry {
             btree_map::Entry::Vacant(vacant) => Self::Vacant(VacantEntry(vacant, PhantomData)),
@@ -237,5 +324,17 @@ impl<'a, T: Send + Sync + 'static> Deref for OccupiedEntry<'a, T> {
 impl<'a, T: Send + Sync + 'static> DerefMut for OccupiedEntry<'a, T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.get_mut()
+    }
+}
+
+impl<'a, T: Send + Sync + 'static> From<OccupiedEntry<'a, T>> for Entry<'a, T> {
+    fn from(occupied_entry: OccupiedEntry<'a, T>) -> Self {
+        Self::Occupied(occupied_entry)
+    }
+}
+
+impl<'a, T: Send + Sync + 'static> From<VacantEntry<'a, T>> for Entry<'a, T> {
+    fn from(vacant_entry: VacantEntry<'a, T>) -> Self {
+        Self::Vacant(vacant_entry)
     }
 }
