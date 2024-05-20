@@ -1,4 +1,7 @@
-use std::process::Termination;
+use std::{
+    panic::{catch_unwind, AssertUnwindSafe},
+    process::Termination,
+};
 use test_harness::test;
 use type_set::{entry::Entry, TypeSet};
 
@@ -82,24 +85,33 @@ fn merge() {
 fn entry() {
     let mut set = TypeSet::new();
     let entry = set.entry::<String>();
-    let Entry::Vacant(vacant_entry) = entry else {
-        panic!()
-    };
+    assert!(entry.is_empty());
+    let vacant_entry = entry.unwrap_vacant();
     vacant_entry.insert("hello".into());
 
-    let mut entry = set.entry::<String>();
-    let Entry::Occupied(occupied_entry) = &mut entry else {
-        panic!()
-    };
+    let vacant = set.entry::<usize>().unwrap_vacant();
+    assert!(Entry::from(vacant).is_empty()); // sure it's a bit contrived
+
+    let mut occupied_entry = set.entry::<String>().unwrap_occupied();
     assert_eq!(&**occupied_entry, "hello"); //deref
     assert_eq!(occupied_entry.get(), "hello");
     occupied_entry.get_mut().push_str(" world");
     occupied_entry.make_ascii_uppercase(); //deref mut
 
-    let Entry::Occupied(occupied_entry) = entry else {
-        panic!()
-    };
-    assert_eq!(occupied_entry.remove(), "HELLO WORLD");
+    set.entry::<String>().into_mut().unwrap().push('!');
+
+    assert_eq!(set.entry::<String>().take().unwrap(), "HELLO WORLD!");
+
+    assert!(set.entry::<String>().into_occupied().is_none());
+    let vacant = set.entry::<String>();
+
+    assert_eq!(
+        *catch_unwind(AssertUnwindSafe(move || { vacant.unwrap_occupied() }))
+            .unwrap_err()
+            .downcast::<String>()
+            .unwrap(),
+        "expected an occupied type-set entry for alloc::string::String, but was vacant"
+    );
 
     assert_eq!(*set.entry::<usize>().or_insert(10), 10);
     assert_eq!(
@@ -109,10 +121,21 @@ fn entry() {
         20
     );
 
+    let occupied = set.entry::<usize>();
+    assert_eq!(
+        *catch_unwind(AssertUnwindSafe(move || { occupied.unwrap_vacant() }))
+            .unwrap_err()
+            .downcast::<String>()
+            .unwrap(),
+        "expected a vacant type-set entry for usize, but was occupied"
+    );
+
     assert_eq!(
         *set.entry::<String>()
             .and_modify(|_| panic!("never called"))
             .or_insert_with(|| String::from("hello")),
         "hello"
     );
+
+    assert!(!Entry::from(set.entry::<String>().unwrap_occupied()).is_empty())
 }
