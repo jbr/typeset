@@ -10,7 +10,7 @@ categories = ["data-structures"]
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-log = { version = "0.4.21", optional = true }
+log = { version = "0.4.22", optional = true }
 
 [dev-dependencies]
 env_logger = "0.11.3"
